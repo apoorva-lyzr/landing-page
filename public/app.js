@@ -278,7 +278,12 @@ async function askQ() {
    * adds, so it starts while the visitor is reading that question rather than after they
    * answer it. If they change an earlier answer it is thrown away, and if it fails the
    * server simply does the work itself. */
-  if (S.qi === n - 1 && S.profile && !S.pending.found) prefetchLines();
+  /* Two questions early rather than one. Discovery needs the profile and the answers so
+   * far, not the last one, and at thirty eight seconds it is most of the wait between
+   * the final answer and the cards. Started here, two questions of the visitor's own
+   * time run underneath it. Changing an earlier answer throws it away and it runs again,
+   * which is the trade and it is worth it. */
+  if (S.qi >= n - 3 && S.profile && !S.pending.found) prefetchLines();
 }
 
 function prefetchLines() {
