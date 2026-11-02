@@ -330,9 +330,16 @@ async function recommend() {
   ], 48);
   try {
     if (S.cards.length) { renderExplorer(); done(); return show('s5'); }   // coming back
-    /* Whatever the prefetch got, if it got anything. The server falls back to running
-     * discovery itself, so a failed or missing prefetch costs time and nothing else. */
-    const found = await (S.pending.found ?? Promise.resolve(null)).catch(() => null);
+    /* Discovery is always its own request, even when the prefetch did not happen.
+     *
+     * The server can run it itself and used to, which was the right call while a function
+     * could take as long as it liked: a failed prefetch cost time and nothing else. It
+     * now costs the visitor a 504, because finding the opportunities and writing them up
+     * are fifty five seconds together against a sixty second limit. So the fallback moves
+     * here, where it is two requests instead of one long one. */
+    const found = await (S.pending.found ?? Promise.resolve(null)).catch(() => null)
+      ?? await post('/api/discover', { id: S.id, profile: S.profile, answers: S.answers })
+        .then((r) => (r?.picks?.length ? r : null)).catch(() => null);
     const r = await post('/api/recommend', { id: S.id, profile: S.profile, answers: S.answers, found });
     done();
     S.cards = r.cards; S.pick = 0; S.picked = [0];
