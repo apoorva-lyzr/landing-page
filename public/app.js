@@ -194,7 +194,17 @@ $('start').onclick = () => {
 
   /* The email domain is the website. Asking for both was asking the same question twice,
    * and people answered the second one with their email. */
+  /* Two requests, because one serverless function cannot hold both halves of this inside
+   * its time limit: the first reads their site, the second reads the model, and the
+   * material travels between them through here. The visitor sees one loading screen. */
   S.pending.profile = post('/api/profile', { email, staged: true })
+    .then((r) => {
+      if (!r.ok) throw new Error(r.message || r.error);
+      /* A server that did not stage has already done both halves. */
+      return r.stage === 'gathered'
+        ? post('/api/profile', { id: r.id, material: r.material })
+        : r;
+    })
     .then((r) => {
       if (!r.ok) throw new Error(r.message || r.error);
       S.id = r.id; S.profile = r.profile; S.brand = r.brand ?? null;
