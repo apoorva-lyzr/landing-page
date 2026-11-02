@@ -194,7 +194,7 @@ $('start').onclick = () => {
 
   /* The email domain is the website. Asking for both was asking the same question twice,
    * and people answered the second one with their email. */
-  S.pending.profile = post('/api/profile', { email })
+  S.pending.profile = post('/api/profile', { email, staged: true })
     .then((r) => {
       if (!r.ok) throw new Error(r.message || r.error);
       S.id = r.id; S.profile = r.profile; S.brand = r.brand ?? null;
