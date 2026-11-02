@@ -165,6 +165,15 @@ const AGENTS = {
      * remains out: it misread an audit firm as an IT consultancy. */
     model: 'anthropic/claude-sonnet-4-6',
   },
+  /* The profile is written by two models on the same material at the same time: this one
+   * reads off their pages, the judgement one decides what it means. One call writing all
+   * eighteen fields was forty seconds of decode on its own, which is most of a serverless
+   * function's wall clock. Halved and run together, the step costs the slower half. */
+  partner_profiler_judgement: {
+    name: 'Partner profiler, judgement half (Emerging Partner Program)',
+    description: 'Writes what the firm has already built and sells, its strengths and what is worth asking.',
+    file: 'profiler-judgement-prompt.md',
+  },
   partner_shortlist: {
     name: 'Partner opportunity shortlist (Emerging Partner Program)',
     description: 'Picks the 3 playbook entries worth writing up, and the angle for each.',

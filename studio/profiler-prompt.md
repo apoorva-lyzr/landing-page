@@ -200,33 +200,100 @@ you write.
 Inside every one of those, say it once and stop. A second sentence restating the first is
 the thing these budgets exist to cut.
 
+### Which half of the profile is yours
+
+**You write the record of what this company is: the half of the profile that is read off
+their pages rather than judged. A second pass runs beside this one on the same material
+and writes what they have built, what they already sell and what is worth exploring, so
+those are not yours and are not in your schema. Write only the fields below.**
+
 ## Output schema (Studio Structured Output, strict)
 
 ```json
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["company", "archetype", "services", "strengths", "industries", "customer_type", "named_clients", "platforms", "markets", "delivery_capability", "already_built", "already_offers", "recent_moves", "worth_exploring", "contact", "domain_mismatch", "confirm", "gaps"],
+  "required": [
+    "company",
+    "archetype",
+    "services",
+    "industries",
+    "customer_type",
+    "named_clients",
+    "platforms",
+    "markets",
+    "delivery_capability",
+    "contact",
+    "domain_mismatch"
+  ],
   "properties": {
     "company": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "website", "one_line", "employees"],
+      "required": [
+        "name",
+        "website",
+        "one_line",
+        "employees"
+      ],
       "properties": {
-        "name": { "type": "string" },
-        "website": { "type": "string" },
-        "one_line": { "type": "string" },
-        "employees": { "type": ["integer", "null"] }
+        "name": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "one_line": {
+          "type": "string"
+        },
+        "employees": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
       }
     },
     "archetype": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["primary", "secondary", "confidence"],
+      "required": [
+        "primary",
+        "secondary",
+        "confidence"
+      ],
       "properties": {
-        "primary": { "type": "string", "enum": ["it-consultancy-msp", "marketing-agency", "hr-consultancy", "finance-accounting-firm", "infrastructure-sovereignty"] },
-        "secondary": { "type": "array", "items": { "type": "string", "enum": ["it-consultancy-msp", "marketing-agency", "hr-consultancy", "finance-accounting-firm", "infrastructure-sovereignty"] } },
-        "confidence": { "type": "string", "enum": ["high", "medium", "low"] }
+        "primary": {
+          "type": "string",
+          "enum": [
+            "it-consultancy-msp",
+            "marketing-agency",
+            "hr-consultancy",
+            "finance-accounting-firm",
+            "infrastructure-sovereignty"
+          ]
+        },
+        "secondary": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "it-consultancy-msp",
+              "marketing-agency",
+              "hr-consultancy",
+              "finance-accounting-firm",
+              "infrastructure-sovereignty"
+            ]
+          }
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        }
       }
     },
     "services": {
@@ -234,150 +301,203 @@ the thing these budgets exist to cut.
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "evidence", "source"],
+        "required": [
+          "name",
+          "evidence",
+          "source"
+        ],
         "properties": {
-          "name": { "type": "string" },
-          "evidence": { "type": "string" },
-          "source": { "type": "string", "enum": ["site", "apollo", "inferred"] }
+          "name": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "site",
+              "apollo",
+              "inferred"
+            ]
+          }
         }
       }
     },
-    "strengths": { "type": "array", "items": { "type": "string" } },
     "industries": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "source"],
+        "required": [
+          "name",
+          "source"
+        ],
         "properties": {
-          "name": { "type": "string" },
-          "source": { "type": "string", "enum": ["site", "apollo", "inferred"] }
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "site",
+              "apollo",
+              "inferred"
+            ]
+          }
         }
       }
     },
-    "customer_type": { "type": "string", "enum": ["enterprise", "mid-market", "smb", "mixed", "unclear"] },
+    "customer_type": {
+      "type": "string",
+      "enum": [
+        "enterprise",
+        "mid-market",
+        "smb",
+        "mixed",
+        "unclear"
+      ]
+    },
     "named_clients": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name"],
-        "properties": { "name": { "type": "string" } }
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
       }
     },
-    "platforms": { "type": "array", "items": { "type": "string" } },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "markets": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["hq", "presence", "customers", "customers_confidence"],
+      "required": [
+        "hq",
+        "presence",
+        "customers",
+        "customers_confidence"
+      ],
       "properties": {
-        "hq": { "type": ["string", "null"] },
-        "presence": { "type": "array", "items": { "type": "string" } },
+        "hq": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "presence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "customers": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "evidence"],
+            "required": [
+              "name",
+              "evidence"
+            ],
             "properties": {
-              "name": { "type": "string" },
-              "evidence": { "type": "string" }
+              "name": {
+                "type": "string"
+              },
+              "evidence": {
+                "type": "string"
+              }
             }
           }
         },
-        "customers_confidence": { "type": "string", "enum": ["confirmed", "likely", "unknown"] }
+        "customers_confidence": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "likely",
+            "unknown"
+          ]
+        }
       }
     },
     "delivery_capability": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["verdict", "evidence"],
+      "required": [
+        "verdict",
+        "evidence"
+      ],
       "properties": {
-        "verdict": { "type": "string", "enum": ["builds", "advises", "unclear"] },
-        "evidence": { "type": "string" }
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "builds",
+            "advises",
+            "unclear"
+          ]
+        },
+        "evidence": {
+          "type": "string"
+        }
       }
     },
-    "worth_exploring": { "type": "string" },
     "contact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "first_name", "title", "seniority", "is_decision_maker"],
+      "required": [
+        "name",
+        "first_name",
+        "title",
+        "seniority",
+        "is_decision_maker"
+      ],
       "properties": {
-        "name": { "type": ["string", "null"] },
-        "first_name": { "type": ["string", "null"] },
-        "title": { "type": ["string", "null"] },
-        "seniority": { "type": ["string", "null"] },
-        "is_decision_maker": { "type": "boolean" }
-      }
-    },
-    "domain_mismatch": { "type": "boolean" },
-    "confirm": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["field", "question", "guess", "options"],
-        "properties": {
-          "field": { "type": "string" },
-          "question": { "type": "string" },
-          "guess": { "type": "string" },
-          "options": { "type": "array", "items": { "type": "string" } }
-        }
-      }
-    },
-    "already_offers": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["name", "customer_gets", "source_url"],
-        "properties": {
-          "name": { "type": "string" },
-          "customer_gets": { "type": "string" },
-          "source_url": { "type": "string" }
-        }
-      }
-    },
-    "already_built": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["verdict", "capabilities", "tied_to"],
-      "properties": {
-        "verdict": { "type": "string", "enum": ["none", "exploring", "building", "shipping"] },
-        "capabilities": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["name", "what_it_does", "evidence", "source_url"],
-            "properties": {
-              "name": { "type": "string" },
-              "what_it_does": { "type": "string" },
-              "evidence": { "type": "string" },
-              "source_url": { "type": "string" }
-            }
-          }
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "tied_to": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "recent_moves": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["what", "when", "source_url"],
-        "properties": {
-          "what": { "type": "string" },
-          "when": { "type": "string" },
-          "source_url": { "type": "string" }
+        "first_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "seniority": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "is_decision_maker": {
+          "type": "boolean"
         }
       }
     },
-    "gaps": { "type": "array", "items": { "type": "string" } }
+    "domain_mismatch": {
+      "type": "boolean"
+    }
   }
 }
 ```
+
 
 ## What the backend does
 
