@@ -6,13 +6,15 @@ revenue that comes with it.
 
 ## Goal
 
-Propose six to eight candidate opportunities, then choose the strongest. The backend
+Propose five or six candidate opportunities, then choose the strongest. The backend
 checks the evidence behind each one and keeps up to three, in the order you chose.
 
 **Generating and selecting are two different jobs and the caution belongs to the second
 one.** `opportunities` is the long list: write every candidate you can defend, including
 ones you will not pick. Three candidates is not discipline, it is three to choose between
-and the backend will reject some of them on evidence you cannot see. The judgement about
+and the backend will reject some of them on evidence you cannot see. Five is the floor,
+six the ceiling: a seventh costs the visitor seconds they spend watching a loading screen
+and buys a candidate you were never going to choose. The judgement about
 which deserve a page happens in `selection`, where returning two or one is a legitimate
 answer. It is never a reason to propose fewer. Another
 writer turns the survivors into full cards. Your job is to generate honestly, to say
@@ -305,7 +307,7 @@ more.
    recognises rather than a tool their client has to be taught. A shortlist that is three
    platform products and nothing else has ignored half of what we have.
 
-8. **Spread the candidates across the business.** Across six to eight, cover more than
+8. **Spread the candidates across the business.** Across five or six, cover more than
    one row of the capability map, more than one buyer, and more than one shape of money:
    work inside accounts they already hold, a way into accounts they do not, and something
    that bills every month. A set that is seven variations of one engagement is a failure
@@ -326,9 +328,10 @@ more.
    choosing different *work*.
 
 10. **Keep the prose short. These are fields, not paragraphs.** `headline` max 12 words
-   and it names the service, not the technology. `customer_problem` max 25 words.
-   `paid_service` max 10 words. `beyond_today` max 25 words. `lyzr_advantage` max 20 words. `expansion_path` max 15
-   words. `buyer` is a job title, 2 to 5 words. Anything longer is cut by the backend
+   and it names the service, not the technology. `customer_problem` max 20 words.
+   `paid_service` max 10 words. `beyond_today` max 18 words. `lyzr_advantage` max 16 words.
+   `expansion_path` max 12 words. `why_strongest` max 20 words. `differs_how` max 15 words.
+   `why_not` max 12 words. `buyer` is a job title, 2 to 5 words. Anything longer is cut by the backend
    mid-sentence, which reads worse than the short version you could have written.
 
 11. **`work` and `unit` are four words each.** `work` is what the engagement is about

@@ -182,6 +182,24 @@ next-generation, state-of-the-art, paradigm, ecosystem play, north star.
 beats "AI-powered intelligent document processing". If a sentence would survive being
 pasted onto any other firm's website, it is filler and must be cut or made specific.
 
+### Field budgets
+
+**Every field here is read by a later step, and none of them reads past these counts.**
+Writing more does not make the profile better, it makes the visitor wait: this call is the
+longest thing between them and their first screen, and its length is decided by how much
+you write.
+
+- `services`: at most 6, the ones they lead with.
+- `strengths`: at most 4.
+- `industries`: at most 6. `markets`: at most 6. `platforms`: at most 8.
+- `named_clients`: at most 8, the ones named most prominently.
+- `already_built.capabilities`: at most 5, the ones with a name, a customer or a date.
+- `already_offers`: at most 5, the ones that read like a line on a price list.
+- `recent_moves`: at most 3, newest first. `worth_exploring`: at most 3. `gaps`: at most 3.
+
+Inside every one of those, say it once and stop. A second sentence restating the first is
+the thing these budgets exist to cut.
+
 ## Output schema (Studio Structured Output, strict)
 
 ```json

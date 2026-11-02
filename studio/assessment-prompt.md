@@ -46,14 +46,13 @@ sentence and say that one plainly. Confidence notes go in `internal`, which they
 
 ### The fields
 
-`recommend_id`: the id of the opportunity that should be page one, argued from their own
-evidence rather than from market size. With one opportunity, its own id.
+`recommend_id`: the id of the opportunity you were given.
 
 **The whole page is 150 to 200 words.** It has to sit on one A4 sheet beside its
 headline, its links and its margins, so the word limits below are limits, not targets.
 Where a sentence is already clear in fifteen words, do not write twenty five.
 
-`pages`: one entry per chosen opportunity, in the order given, each with:
+`pages`: exactly one entry, for the opportunity you were given, with:
 
 - `id`: the opportunity's id, exactly as given.
 
