@@ -129,13 +129,36 @@ def build(src, out_name, agent_url=None, assets_base=None, links=None):
         sys.exit("found __AGENT_HTML in %s but could not cut it out" % src)
 
     # 2. Manifest assets, referenced from the markup by bare uuid.
+    urls = {}
     for uuid, entry in json.loads(manifest_raw).items():
         data = base64.b64decode(entry["data"])
         if entry.get("compressed"):
             data = gzip.decompress(data)
-        url = write_asset(data, entry.get("mime", ""))
+        url = urls[uuid] = write_asset(data, entry.get("mime", ""))
         bytes_out += len(data)
         template = template.replace(uuid, url)
+
+    # 2b. Assets the page looks up by name at runtime rather than naming in its markup —
+    #     the directory's 57 partner logos are all of them. The export resolves the id to
+    #     a blob URL in its boot script; with the boot script gone, the page has to be
+    #     handed the same map, pointing at the files, or every logo falls back to a path
+    #     in the data that nothing serves. Injected ahead of the page's own scripts, which
+    #     read window.__resources when they mount.
+    ext = json.loads(section(s, "ext_resources") or "[]")
+    resources = {e["id"]: urls[e["uuid"]] for e in ext
+                 if e.get("uuid") in urls and not e["id"].startswith("http")}
+    missing = [e["id"] for e in ext
+               if e.get("uuid") not in urls and not e["id"].startswith("http")]
+    if missing:
+        sys.exit("%s names %d resources that are not in its manifest: %s"
+                 % (src, len(missing), ", ".join(missing[:5])))
+    if resources:
+        head = re.search(r"<head[^>]*>", template, re.I)
+        if not head:
+            sys.exit("%s has no <head> to inject the resource map into" % src)
+        inject = ("<script>window.__resources = "
+                  + json.dumps(resources).replace("</", "<\\/") + ";</script>\n")
+        template = template[:head.end()] + inject + template[head.end():]
 
     # 3. Assets the export inlined into the markup as data: URIs — in this export that is
     #    most of the weight, fonts and photographs both.
@@ -160,7 +183,16 @@ def build(src, out_name, agent_url=None, assets_base=None, links=None):
     #    them), relative asset paths, and a React entry nothing on the page loads.
     template = re.sub(r'\s+(integrity|crossorigin)="[^"]*"', "", template, flags=re.I)
     template = re.sub(r'(?<![/\w])assets/', "/assets/", template)
-    template = re.sub(r'"https://unpkg\.com/[^"]*": "[^"]*",? ?', "", template)
+    def prune(m):
+        """The export lists the CDN scripts it replaced alongside the real resources.
+        Nothing on either page loads them, and a regex that cuts a key out of an object
+        literal cuts a comma out with it — so the map is parsed and written back."""
+        kept = {k: v for k, v in json.loads(m.group(1)).items() if not k.startswith("http")}
+        return "window.__resources = " + json.dumps(kept).replace("</", "<\\/") + ";"
+
+    template, n = re.subn(r"window\.__resources\s*=\s*(\{.*?\});", prune, template, flags=re.S)
+    if n > 1:
+        sys.exit("%s declares window.__resources %d times; expected at most one" % (src, n))
 
     def lazy(m):
         t = m.group(0)
