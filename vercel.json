@@ -8,6 +8,6 @@
   },
   "rewrites": [
     { "source": "/agent", "destination": "/agent.html" },
-    { "source": "/partners", "destination": "/partners.html" }
+    { "source": "/partner-directory", "destination": "/partner-directory.html" }
   ]
 }

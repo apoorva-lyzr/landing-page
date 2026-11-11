@@ -4,7 +4,8 @@
     python3 scripts/build-site.py --from ~/other/folder  # exports kept elsewhere
     python3 scripts/build-site.py --agent https://partners.lyzr.ai/agent \
                                   --assets https://partners.lyzr.ai \
-                                  --links https://www.lyzr.ai/emerging-partners
+                                  --home https://www.lyzr.ai/emerging-partners \
+                                  --directory https://www.lyzr.ai/partner-directory
 
 Two exports make the site:
 
@@ -36,6 +37,9 @@ origin, so there is no CORS, no third-party cookie, no shared build. Edit the ag
 redeploy it, and the page on lyzr.ai is serving the new one the next time anyone opens
 the overlay.
 
+--home and --directory are the same idea for the link between the two pages. They are
+routes here — / and /partner-directory — and two CMS pages on lyzr.ai there.
+
 --assets is the same idea for the page's own images and fonts. They are written as
 /assets/... , which only resolves if the page sits at the root of its own deployment.
 Point --assets at the deployment and the built page references them there instead, which
@@ -51,16 +55,28 @@ ASSETS = os.path.join(PUBLIC, "assets")
 
 PAGES = [
     ("Lyzr Emerging Partners.html", "index.html"),
-    ("Lyzr Partner Directory.html", "partners.html"),
+    ("Lyzr Partner Directory.html", "partner-directory.html"),
 ]
 
 # The two exports link to each other by filename, because side by side in a folder that is
 # what they are. On the site they are routes, so the links are rewritten to the routes.
-# --links moves them to another origin, the way --agent and --assets do.
+# --home and --directory name them outright, for when the pages are two CMS pages on
+# lyzr.ai rather than a deployment of their own.
 ROUTES = {
     "Lyzr Emerging Partners.html": "/",
-    "Lyzr Partner Directory.html": "/partners",
+    "Lyzr Partner Directory.html": "/partner-directory",
 }
+
+# Two stories are written but not yet published anywhere to link to, and the third partner
+# has no story at all. Both are the design holding a place for something that does not
+# exist yet, and a visitor cannot tell the difference, so they come out here rather than
+# going live as a dead link and an empty promise. Put them back by deleting this.
+CUT = [
+    ('<article class="st st-soon"', "</article>", 1,
+     "the AND Digital placeholder card"),
+    ('<a class="st-link"', "</a>", 2,
+     "the unpublished 'Read the story' links"),
+]
 
 EXT = {
     "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp",
@@ -92,7 +108,7 @@ def write_asset(data, mime):
     return "/assets/" + name
 
 
-def build(src, out_name, agent_url=None, assets_base=None, links_base=None):
+def build(src, out_name, agent_url=None, assets_base=None, links=None):
     s = io.open(src, encoding="utf-8").read()
 
     manifest_raw, template_raw = section(s, "manifest"), section(s, "template")
@@ -161,12 +177,34 @@ def build(src, out_name, agent_url=None, assets_base=None, links_base=None):
         if template is before and "var APP = " in before:
             sys.exit("the agent embed in %s no longer declares APP the way --agent expects" % src)
 
-    # 6. The link between the two pages: a filename in the export, a route on the site.
-    for filename, route in ROUTES.items():
-        for href in ('href="%s"' % filename, 'href="%s"' % filename.replace(" ", "%20")):
-            template = template.replace(href, 'href="%s"' % ((links_base or "").rstrip("/") + route))
+    # 6. Whole elements the design is holding open for content that does not exist yet.
+    #    Each is matched by its own literal start and end, and the span is sanity-checked,
+    #    because an index walked back from a label lands outside the element and splices
+    #    the document into itself.
+    for start, end, count, what in CUT:
+        found = 0
+        while True:
+            a = template.find(start)
+            if a == -1:
+                break
+            b = template.find(end, a)
+            if b == -1:
+                sys.exit("%s is not closed where expected in %s" % (what, src))
+            b += len(end)
+            if not 0 < b - a < 2000:
+                sys.exit("%s looks wrong in %s: %d characters" % (what, src, b - a))
+            template = template[:a] + template[b:]
+            found += 1
+        if found != count and out_name == "index.html":
+            sys.exit("expected %d of %s in %s, cut %d" % (count, what, src, found))
 
-    # 7. And where its own images and fonts are served from.
+    # 7. The link between the two pages: a filename in the export, a route on the site.
+    for filename, route in ROUTES.items():
+        target = (links or {}).get(filename, route)
+        for href in ('href="%s"' % filename, 'href="%s"' % filename.replace(" ", "%20")):
+            template = template.replace(href, 'href="%s"' % target)
+
+    # 8. And where its own images and fonts are served from.
     if assets_base:
         template = re.sub(r'(?<![\w.])/assets/', assets_base.rstrip("/") + "/assets/", template)
 
@@ -176,7 +214,7 @@ def build(src, out_name, agent_url=None, assets_base=None, links_base=None):
           % (out_name, os.path.getsize(out) / 1024.0, inline, bytes_out / 1048576.0))
 
 
-def main(folder, agent_url=None, assets_base=None, links_base=None):
+def main(folder, agent_url=None, assets_base=None, links=None):
     folder = os.path.expanduser(folder)
     os.makedirs(ASSETS, exist_ok=True)
     for stale in os.listdir(ASSETS):
@@ -185,24 +223,28 @@ def main(folder, agent_url=None, assets_base=None, links_base=None):
         src = os.path.join(folder, src_name)
         if not os.path.exists(src):
             sys.exit("missing export: " + src)
-        build(src, out_name, agent_url, assets_base, links_base)
+        build(src, out_name, agent_url, assets_base, links)
     print("assets -> %s (%d files)" % (ASSETS, len(os.listdir(ASSETS))))
     print("agent   -> %s" % (agent_url or "agent.html (same deployment)"))
     print("served  -> %s/assets/" % (assets_base.rstrip("/") if assets_base else ""))
-    print("links   -> %s/ and %s/partners" % ((links_base or "").rstrip("/"), (links_base or "").rstrip("/")))
+    for filename, route in ROUTES.items():
+        print("links   -> %-28s %s" % (filename, (links or {}).get(filename, route)))
 
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    folder, agent, assets, links = "~/Downloads/standalone", None, None, None
+    folder, agent, assets, links = "~/Downloads/standalone", None, None, {}
+    HOME, DIR = "Lyzr Emerging Partners.html", "Lyzr Partner Directory.html"
     while args:
         a = args.pop(0)
         if a == "--agent":
             agent = args.pop(0) if args else sys.exit("--agent needs a URL")
         elif a == "--assets":
             assets = args.pop(0) if args else sys.exit("--assets needs a URL")
-        elif a == "--links":
-            links = args.pop(0) if args else sys.exit("--links needs a URL")
+        elif a == "--home":
+            links[HOME] = args.pop(0) if args else sys.exit("--home needs a URL")
+        elif a == "--directory":
+            links[DIR] = args.pop(0) if args else sys.exit("--directory needs a URL")
         elif a == "--from":
             folder = args.pop(0) if args else sys.exit("--from needs a folder")
         elif a.startswith("-"):

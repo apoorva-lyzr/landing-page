@@ -18,7 +18,7 @@ Needs `.env` with `LYZR_API_KEY` (required), `APOLLO_API_KEY` and `SERPER_API_KE
 ## Pages
 
 - `/` — the landing page
-- `/partners` — the partner directory
+- `/partner-directory` — the partner directory
 - `/agent` — the agent
 
 The two static pages are built from the Claude Design standalone exports, which are the
@@ -28,9 +28,20 @@ design source and are not kept in the repo:
 python3 scripts/build-site.py            # reads ~/Downloads/standalone/*.html
 ```
 
-It writes `public/index.html`, `public/partners.html` and every asset either export
-carries into `public/assets/`. The agent overlay is part of the design source now, so
+It writes `public/index.html`, `public/partner-directory.html` and every asset either
+export carries into `public/assets/`. The agent overlay is part of the design source now, so
 there is nothing to patch in afterwards — it opens `/agent` in an iframe.
+
+For the lyzr.ai copies, every address the pages carry can be named at build time, so the
+agent and its API stay on this deployment while the two pages go into the CMS:
+
+```bash
+python3 scripts/build-site.py \
+  --agent     https://partners.lyzr.ai/agent \
+  --assets    https://partners.lyzr.ai \
+  --home      https://www.lyzr.ai/emerging-partners \
+  --directory https://www.lyzr.ai/partner-directory
+```
 
 `public/agent.html` and `public/app.js` are hand-maintained, not generated.
 

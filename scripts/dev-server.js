@@ -28,7 +28,7 @@ http.createServer(async (req, res) => {
   if (fn) return fn(req, res);
 
   // vercel.json's rewrites, so an extensionless link works the same here as deployed.
-  const REWRITES = { '/': '/index.html', '/agent': '/agent.html', '/partners': '/partners.html' };
+  const REWRITES = { '/': '/index.html', '/agent': '/agent.html', '/partner-directory': '/partner-directory.html' };
   const rel = REWRITES[url.pathname.replace(/\/$/, '') || '/'] ?? url.pathname;
   const file = path.join(ROOT, 'public', rel);
   if (!file.startsWith(path.join(ROOT, 'public')) || !fs.existsSync(file)) { res.statusCode = 404; return res.end('not found'); }
