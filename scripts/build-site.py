@@ -1,7 +1,9 @@
 """Turns the Claude Design standalone exports into the site in public/.
 
-    python3 scripts/build-site.py                      # both pages, from ~/Downloads/standalone
-    python3 scripts/build-site.py ~/some/other/folder   # same, from elsewhere
+    python3 scripts/build-site.py                        # both pages, from ~/Downloads/standalone
+    python3 scripts/build-site.py --from ~/other/folder  # exports kept elsewhere
+    python3 scripts/build-site.py --agent https://partners.lyzr.ai/agent \
+                                  --assets https://partners.lyzr.ai
 
 Two exports make the site:
 
@@ -22,6 +24,22 @@ carries a whole copy of the agent page inline, as `window.__AGENT_HTML`, to run 
 overlay from a srcdoc. We drop it: the agent is a real page at /agent.html, the overlay
 falls back to it on its own, and the landing page is ~900KB lighter for every visitor
 who never opens it.
+
+--agent is the one thing that has to be decided at build time. The export opens the
+overlay on a *relative* `agent.html`, which is right while the whole site is one
+deployment. When the landing page is lifted out — onto lyzr.ai, where it is static HTML
+in a CMS and there is no Node to answer /api — the agent stays behind on its own
+deployment and the iframe has to name it absolutely. Nothing else about the page
+changes, and nothing about the agent does: it keeps talking to the API on its own
+origin, so there is no CORS, no third-party cookie, no shared build. Edit the agent,
+redeploy it, and the page on lyzr.ai is serving the new one the next time anyone opens
+the overlay.
+
+--assets is the same idea for the page's own images and fonts. They are written as
+/assets/... , which only resolves if the page sits at the root of its own deployment.
+Point --assets at the deployment and the built page references them there instead, which
+leaves one self-contained HTML file to paste into the CMS and nothing to upload beside
+it. Re-export the design, rebuild, paste again: the architecture does not move.
 """
 import base64, gzip, hashlib, io, json, os, re, sys
 
@@ -65,7 +83,7 @@ def write_asset(data, mime):
     return "/assets/" + name
 
 
-def build(src, out_name):
+def build(src, out_name, agent_url=None, assets_base=None):
     s = io.open(src, encoding="utf-8").read()
 
     manifest_raw, template_raw = section(s, "manifest"), section(s, "template")
@@ -127,13 +145,24 @@ def build(src, out_name):
 
     template = re.sub(r"<img\b[^>]*>", lazy, template)
 
+    # 5. Where the overlay's iframe points. Relative by default: one deployment, one origin.
+    if agent_url:
+        before = template
+        template = template.replace("var APP = 'agent.html';", "var APP = %s;" % json.dumps(agent_url))
+        if template is before and "var APP = " in before:
+            sys.exit("the agent embed in %s no longer declares APP the way --agent expects" % src)
+
+    # 6. And where its own images and fonts are served from.
+    if assets_base:
+        template = re.sub(r'(?<![\w.])/assets/', assets_base.rstrip("/") + "/assets/", template)
+
     out = os.path.join(PUBLIC, out_name)
     io.open(out, "w", encoding="utf-8").write(template)
     print("%-14s %6.0f KB  (%d inline assets, %.1f MB written)"
           % (out_name, os.path.getsize(out) / 1024.0, inline, bytes_out / 1048576.0))
 
 
-def main(folder):
+def main(folder, agent_url=None, assets_base=None):
     folder = os.path.expanduser(folder)
     os.makedirs(ASSETS, exist_ok=True)
     for stale in os.listdir(ASSETS):
@@ -142,9 +171,25 @@ def main(folder):
         src = os.path.join(folder, src_name)
         if not os.path.exists(src):
             sys.exit("missing export: " + src)
-        build(src, out_name)
+        build(src, out_name, agent_url, assets_base)
     print("assets -> %s (%d files)" % (ASSETS, len(os.listdir(ASSETS))))
+    print("agent   -> %s" % (agent_url or "agent.html (same deployment)"))
+    print("served  -> %s/assets/" % (assets_base.rstrip("/") if assets_base else ""))
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "~/Downloads/standalone")
+    args = sys.argv[1:]
+    folder, agent, assets = "~/Downloads/standalone", None, None
+    while args:
+        a = args.pop(0)
+        if a == "--agent":
+            agent = args.pop(0) if args else sys.exit("--agent needs a URL")
+        elif a == "--assets":
+            assets = args.pop(0) if args else sys.exit("--assets needs a URL")
+        elif a == "--from":
+            folder = args.pop(0) if args else sys.exit("--from needs a folder")
+        elif a.startswith("-"):
+            sys.exit("unknown option: " + a)
+        else:
+            folder = a
+    main(folder, agent, assets)
