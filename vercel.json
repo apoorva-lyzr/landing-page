@@ -6,5 +6,8 @@
       "includeFiles": "{kb,data,studio}/**"
     }
   },
-  "rewrites": [{ "source": "/agent", "destination": "/agent.html" }]
+  "rewrites": [
+    { "source": "/agent", "destination": "/agent.html" },
+    { "source": "/partners", "destination": "/partners.html" }
+  ]
 }

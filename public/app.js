@@ -13,7 +13,7 @@ const STEPS = ['s0', 's1', 's3', 's4', 's5', 's6', 's7', 's8'];
 const STAGE_OF = [0, 0, 1, 2, 2, 3, 3, 3];
 const WIDE = new Set(['s5', 's8']);
 
-$('rail').innerHTML = STAGES.map((s, i) => `<div><i></i><span>0${i + 1} &nbsp;${s}</span></div>`).join('');
+$('rail').innerHTML = STAGES.map((s, i) => `<div><i>0${i + 1}</i><span>${s}</span></div>`).join('');
 
 function show(id) {
   for (const s of [...STEPS, 'sx']) $(s).classList.toggle('on', s === id);
@@ -767,7 +767,7 @@ $('exploreback').onclick = () => { S.qi = Math.max(0, S.questions.length - 1); a
  * rather than asking twice. */
 /* Embedded in the landing page: the form there already took the work email, so prefill and
  * start rather than asking twice. */
-const qp = new URLSearchParams(location.search);
+const qp = new URLSearchParams(window.__qp || location.search);
 if (qp.get('email')) {
   $('email').value = qp.get('email');
   if (qp.get('go') !== '0') setTimeout(() => $('start').click(), 120);

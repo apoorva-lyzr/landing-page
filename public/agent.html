@@ -564,6 +564,32 @@ select{width:100%;height:46px;padding:0 12px;font:inherit;font-size:17px;backgro
    them. The page's own breathing room is restored as padding on the sheet instead, so the
    document looks the same and carries none of the browser's furniture. */
 @page{size:A4;margin:0}
+
+/* ---------- vertical stage rail on the left, step on the right ---------- */
+.wrap{max-width:1080px;display:flex;align-items:flex-start;gap:60px;padding:48px 30px 72px}
+.wrap.wide{max-width:1280px}
+body:has(#s3.on) .wrap,body:has(#s6.on) .wrap{flex-direction:row;align-items:stretch}
+.step.on{flex:1;min-width:0}
+.rail{flex:0 0 208px;flex-direction:column;gap:0;margin:0;position:sticky;top:48px;align-self:flex-start;
+  padding:24px;background:#fff;border:1px solid var(--line);border-radius:4px}
+.rail div{flex:none;display:flex;align-items:center;gap:12px;position:relative;padding:12px 0}
+.rail div+div::before{content:"";position:absolute;left:13.5px;top:-12px;width:1px;height:24px;background:var(--line);transition:background .4s}
+.rail div.on+div.on::before{background:var(--ink)}
+.rail i{flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-style:normal;font-size:12px;line-height:1;color:var(--muted);
+  transition:background .3s,border-color .3s,color .3s}
+.rail .on i{background:var(--ink);border-color:var(--ink);color:#fff}
+.rail .now i{background:var(--accent);border-color:var(--accent);color:#fff}
+.rail span{margin:0;font-size:14px;line-height:18px;letter-spacing:.06em;color:var(--muted);overflow:visible}
+.rail .on span{color:var(--ink)}
+@media(max-width:760px){
+  .wrap,body:has(#s3.on) .wrap,body:has(#s6.on) .wrap{flex-direction:column;align-items:stretch;gap:30px;padding:24px 20px 60px}
+  .rail{position:static;flex:none;flex-direction:row;justify-content:space-between;align-self:stretch;padding:12px 16px}
+  .rail div{padding:0;gap:8px}
+  .rail div+div::before{display:none}
+  .rail div:not(.now) span{display:none}
+  .rail span{font-size:12px}
+}
 </style>
 </head>
 <body>

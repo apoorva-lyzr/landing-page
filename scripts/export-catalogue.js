@@ -174,7 +174,6 @@ w('|---|---|');
 w('| `brief-template.json` | The fixed scaffold of the brief. Every partner gets these words. |');
 w('| `products.json` | Platform/agent names used for "what you could demo". |');
 w('| `proof.json` | Proof points kept separately from the catalogue. |');
-w('| `landing-copy.json` | Patch list applied to the landing page. |');
 
 fs.writeFileSync('/Users/apporva-vh/partner-opportunity-agent/CATALOGUE.md', out.join('\n') + '\n');
 console.log('wrote CATALOGUE.md —', out.length, 'lines');
