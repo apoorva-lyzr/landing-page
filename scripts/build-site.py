@@ -3,7 +3,8 @@
     python3 scripts/build-site.py                        # both pages, from ~/Downloads/standalone
     python3 scripts/build-site.py --from ~/other/folder  # exports kept elsewhere
     python3 scripts/build-site.py --agent https://partners.lyzr.ai/agent \
-                                  --assets https://partners.lyzr.ai
+                                  --assets https://partners.lyzr.ai \
+                                  --links https://www.lyzr.ai/emerging-partners
 
 Two exports make the site:
 
@@ -53,6 +54,14 @@ PAGES = [
     ("Lyzr Partner Directory.html", "partners.html"),
 ]
 
+# The two exports link to each other by filename, because side by side in a folder that is
+# what they are. On the site they are routes, so the links are rewritten to the routes.
+# --links moves them to another origin, the way --agent and --assets do.
+ROUTES = {
+    "Lyzr Emerging Partners.html": "/",
+    "Lyzr Partner Directory.html": "/partners",
+}
+
 EXT = {
     "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp",
     "image/svg+xml": ".svg", "image/gif": ".gif", "image/avif": ".avif",
@@ -83,7 +92,7 @@ def write_asset(data, mime):
     return "/assets/" + name
 
 
-def build(src, out_name, agent_url=None, assets_base=None):
+def build(src, out_name, agent_url=None, assets_base=None, links_base=None):
     s = io.open(src, encoding="utf-8").read()
 
     manifest_raw, template_raw = section(s, "manifest"), section(s, "template")
@@ -152,7 +161,12 @@ def build(src, out_name, agent_url=None, assets_base=None):
         if template is before and "var APP = " in before:
             sys.exit("the agent embed in %s no longer declares APP the way --agent expects" % src)
 
-    # 6. And where its own images and fonts are served from.
+    # 6. The link between the two pages: a filename in the export, a route on the site.
+    for filename, route in ROUTES.items():
+        for href in ('href="%s"' % filename, 'href="%s"' % filename.replace(" ", "%20")):
+            template = template.replace(href, 'href="%s"' % ((links_base or "").rstrip("/") + route))
+
+    # 7. And where its own images and fonts are served from.
     if assets_base:
         template = re.sub(r'(?<![\w.])/assets/', assets_base.rstrip("/") + "/assets/", template)
 
@@ -162,7 +176,7 @@ def build(src, out_name, agent_url=None, assets_base=None):
           % (out_name, os.path.getsize(out) / 1024.0, inline, bytes_out / 1048576.0))
 
 
-def main(folder, agent_url=None, assets_base=None):
+def main(folder, agent_url=None, assets_base=None, links_base=None):
     folder = os.path.expanduser(folder)
     os.makedirs(ASSETS, exist_ok=True)
     for stale in os.listdir(ASSETS):
@@ -171,25 +185,28 @@ def main(folder, agent_url=None, assets_base=None):
         src = os.path.join(folder, src_name)
         if not os.path.exists(src):
             sys.exit("missing export: " + src)
-        build(src, out_name, agent_url, assets_base)
+        build(src, out_name, agent_url, assets_base, links_base)
     print("assets -> %s (%d files)" % (ASSETS, len(os.listdir(ASSETS))))
     print("agent   -> %s" % (agent_url or "agent.html (same deployment)"))
     print("served  -> %s/assets/" % (assets_base.rstrip("/") if assets_base else ""))
+    print("links   -> %s/ and %s/partners" % ((links_base or "").rstrip("/"), (links_base or "").rstrip("/")))
 
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    folder, agent, assets = "~/Downloads/standalone", None, None
+    folder, agent, assets, links = "~/Downloads/standalone", None, None, None
     while args:
         a = args.pop(0)
         if a == "--agent":
             agent = args.pop(0) if args else sys.exit("--agent needs a URL")
         elif a == "--assets":
             assets = args.pop(0) if args else sys.exit("--assets needs a URL")
+        elif a == "--links":
+            links = args.pop(0) if args else sys.exit("--links needs a URL")
         elif a == "--from":
             folder = args.pop(0) if args else sys.exit("--from needs a folder")
         elif a.startswith("-"):
             sys.exit("unknown option: " + a)
         else:
             folder = a
-    main(folder, agent, assets)
+    main(folder, agent, assets, links)
