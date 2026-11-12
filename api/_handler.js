@@ -39,7 +39,27 @@ export async function record(id, patch) {
   }
 }
 
+/* The agent is embedded on www.lyzr.ai inside a srcdoc iframe, which inherits the parent
+ * page's origin — so from there every call to this API is cross-origin and needs CORS.
+ * Same-origin use (the Vercel app itself, localhost) sends no Origin and is unaffected. */
+const ALLOWED = [
+  /^https:\/\/([a-z0-9-]+\.)*lyzr\.ai$/,
+  /^https:\/\/[a-z0-9-]+\.vercel\.app$/,
+  /^http:\/\/localhost(:\d+)?$/,
+];
+
+function cors(req, res) {
+  const origin = req.headers.origin;
+  if (!origin || !ALLOWED.some((re) => re.test(origin))) return;
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+}
+
 export const guard = (fn) => async (req, res) => {
+  cors(req, res);
+  if (req.method === 'OPTIONS') { res.statusCode = 204; return res.end(); }
   if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
   try { return await fn(req, res); }
   catch (e) { console.error(e); return json(res, 500, { error: String(e.message || e) }); }

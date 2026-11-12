@@ -35,8 +35,13 @@ const esc = (t = '') => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').r
 /* The model sometimes starts a sentence fragment lowercase; it reads like a typo. */
 const up = (t = '') => String(t).replace(/^[a-z]/, (c) => c.toUpperCase());
 
+/* The embed runs this page in a srcdoc iframe on www.lyzr.ai, where a relative /api/...
+ * resolves to WordPress and 404s. The embed injects window.__API_BASE with the backend's
+ * origin; empty or absent means same-origin, which is how the Vercel app itself runs. */
+const API_BASE = (typeof window !== 'undefined' && window.__API_BASE || '').replace(/\/$/, '');
+
 async function post(path, payload) {
-  const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const r = await fetch(API_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `server error ${r.status}`);
   return r.json();
 }
